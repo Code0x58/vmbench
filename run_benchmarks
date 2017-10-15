@@ -480,7 +480,7 @@ def main():
     for concurrency in sorted(args.concurrency_levels):
         for msgsize in sorted(args.payload_size_levels):
             variations.append({
-                'title': '{}kb messages, concurrency {}'.format(
+                'title': '{}KiB messages, concurrency {}'.format(
                     round(msgsize / 1024, 1), concurrency
                 ),
                 'concurrency': concurrency,
