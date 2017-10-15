@@ -445,6 +445,9 @@ def main():
     parser.add_argument('--benchmarks', type=str,
                         help='comma-separated list of benchmarks to run ' +
                              '(regular expressions are supported)')
+    parser.add_argument('type', type=str,
+                        choices={b['name'].split('-', 1)[0] for b in benchmarks},
+                        help='type of benchmark to run')
     parser.add_argument('--concurrency-levels', type=int, default=[10],
                         nargs='+',
                         help='a list of concurrency levels to use')
@@ -461,11 +464,14 @@ def main():
     if not os.path.exists(_socket):
         os.mkdir(_socket)
 
+    benchmarks_to_run = [b for b in benchmarks
+                         if b['name'].startswith(args.type)]
     if args.benchmarks:
-        benchmarks_to_run = [re.compile(b) for b in args.benchmarks.split(',')]
-    else:
-        benchmarks_to_run = [re.compile(re.escape(b['name']))
-                             for b in benchmarks]
+        patterns = [re.compile(p) for p in args.benchmarks.split(',')]
+        benchmarks_to_run = [
+                b
+                for b in benchmarks_to_run
+                if any(p.match(b['name']) for p in patterns)]
 
     benchmarks_data = []
 
@@ -489,10 +495,7 @@ def main():
     warmup = ['--msize=1024', '--duration=10',
               '--concurrency={}'.format(warmup_concurrency)]
 
-    for benchmark in benchmarks:
-        if not any(b.match(benchmark['name']) for b in benchmarks_to_run):
-            continue
-
+    for benchmark in benchmarks_to_run:
         print(benchmark['title'])
         print('=' * len(benchmark['title']))
         print()
