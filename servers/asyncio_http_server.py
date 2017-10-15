@@ -5,6 +5,7 @@ import aiohttp.server
 from aiohttp import web
 import sys
 
+import sanic
 import httptools
 import uvloop
 
@@ -141,6 +142,27 @@ def httptools_server(loop, addr):
     return loop.create_server(lambda: HttpProtocol(loop=loop), *addr)
 
 
+def sanic_server(loop, addr):
+    kwargs = {'debug': False, 'log_config': None}
+    if type(addr) is type(''):
+        # unix socket
+        sock = socket.socket(socket.AF_UNIX, socket.SOCK_STREAM)
+        sock.bind(addr)
+        kwargs['sock'] = sock
+    else:
+        kwargs['host'], kwargs['port'] = addr
+    app = sanic.Sanic()
+
+    async def test(request, size=1024):
+        if size not in _RESP_CACHE:
+            _RESP_CACHE[size] = b'X' * size
+        return sanic.response.raw(_RESP_CACHE.get(size))
+    app.add_route(test, '/')
+    app.add_route(test, '/<size:int>')
+
+    return app.create_server(**kwargs)
+
+
 if __name__ == '__main__':
     parser = argparse.ArgumentParser()
     parser.add_argument('--type', default='asyncio+aiohttp', action='store')
@@ -154,23 +176,21 @@ if __name__ == '__main__':
             server_type = parts[1]
         else:
             server_type = args.type
-
-        if server_type in {'aiohttp', 'httptools'}:
-            if not loop_type:
-                loop_type = 'asyncio'
-        else:
             loop_type = None
+
+        if server_type not in {'aiohttp', 'httptools', 'sanic'}:
+            abort('unrecognized server type: {}'.format(server_type))
+
+        if loop_type is None:
+            if server_type in {'aiohttp', 'httptools'}:
+                loop_type = 'asyncio'
+            else:
+                loop_type = 'uvloop'
 
         if loop_type not in {'asyncio', 'uvloop'}:
             abort('unrecognized loop type: {}'.format(loop_type))
 
-        if server_type not in {'aiohttp', 'httptools'}:
-            abort('unrecognized server type: {}'.format(server_type))
-
-        if loop_type:
-            loop = globals()[loop_type].new_event_loop()
-        else:
-            loop = None
+        loop = globals()[loop_type].new_event_loop()
 
         print('using {} loop: {!r}'.format(loop_type, loop))
         print('using {} HTTP server'.format(server_type))

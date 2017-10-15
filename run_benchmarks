@@ -170,6 +170,22 @@ benchmarks = [{
     'server_address': unix_address,
     'client': unix_client,
 }, {
+    'name': 'http-asyncio-sanic',
+    'title': 'HTTP server (asyncio/sanic)',
+    'server': python + ['/usr/src/servers/asyncio_http_server.py',
+                        '--type=asyncio+sanic',
+                        '--addr=0.0.0.0:25000'],
+    'server_address': tcp_address,
+    'client': http_client,
+}, {
+    'name': 'http-uvloop-sanic',
+    'title': 'HTTP server (uvloop/sanic)',
+    'server': python + ['/usr/src/servers/asyncio_http_server.py',
+                        '--type=uvloop+sanic',
+                        '--addr=0.0.0.0:25000'],
+    'server_address': tcp_address,
+    'client': http_client,
+}, {
     'name': 'http-asyncio-aiohttp',
     'title': 'HTTP server (asyncio/aiohttp)',
     'server': python + ['/usr/src/servers/asyncio_http_server.py',
