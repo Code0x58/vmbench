@@ -1,16 +1,12 @@
 import argparse
 import asyncio
-import aiohttp
-import aiohttp.server
-from aiohttp import web
 import sys
-
-import sanic
-import httptools
-import uvloop
-
 from socket import *
 
+from aiohttp import web
+import httptools
+import sanic
+import uvloop
 
 PRINT = 0
 
