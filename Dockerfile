@@ -17,12 +17,17 @@ RUN mkdir -p /usr/go/
 ENV GOPATH /usr/go/
 
 RUN apt-get update && apt-get install -y \
-        autoconf automake libtool build-essential git golang
+        autoconf automake libtool build-essential git
 
 RUN curl -sL https://deb.nodesource.com/setup_8.x | bash - && apt-get install -y nodejs
 
 RUN echo "deb http://ftp.debian.org/debian jessie-backports main" >> /etc/apt/sources.list
 RUN apt-get update && apt-get install -y -t jessie-backports gosu
+
+RUN curl https://storage.googleapis.com/golang/go1.8.3.linux-amd64.tar.gz \
+        | tar xz \
+        && mv go /usr/local/ \
+        && ln /usr/local/go/bin/go /usr/bin/go
 
 RUN pip3 install vex
 RUN vex --python=python3.6 -m bench pip install -U pip
