@@ -1,3 +1,3 @@
 #!/bin/bash
 
-docker build --no-cache -t magic/benchmark "$(dirname $0)"
+docker build -t "$@" magic/benchmark "$(dirname $0)"
