@@ -1,11 +1,14 @@
-FROM ubuntu:16.04
+FROM python:3.6
 MAINTAINER elvis@magic.io
 
-RUN DEBIAN_FRONTEND=noninteractive \
-        apt-get update && apt-get install -y \
-            language-pack-en
+ENV DEBIAN_FRONTEND=noninteractive
+RUN apt-get update && apt-get install -y locales
+RUN echo "en_US.UTF-8 UTF-8" > /etc/locale.gen && \
+    locale-gen && \
+    dpkg-reconfigure locales && \
+    /usr/sbin/update-locale LANG=en_US.UTF-8
+ENV LC_ALL en_US.UTF-8
 
-ENV LANG en_US.UTF-8
 ENV WORKON_HOME /usr/local/python-venvs
 ENV GOMAXPROCS 1
 
@@ -13,13 +16,13 @@ RUN mkdir -p /usr/local/python-venvs
 RUN mkdir -p /usr/go/
 ENV GOPATH /usr/go/
 
-RUN DEBIAN_FRONTEND=noninteractive \
-        apt-get update && apt-get install -y \
-            autoconf automake libtool build-essential \
-            python3 python3-pip git nodejs golang gosu
+RUN apt-get update && apt-get install -y \
+        autoconf automake libtool build-essential git nodejs golang
+RUN echo "deb http://ftp.debian.org/debian jessie-backports main" >> /etc/apt/sources.list
+RUN apt-get update && apt-get install -y -t jessie-backports gosu
 
 RUN pip3 install vex
-RUN vex --python=python3.5 -m bench pip install -U pip
+RUN vex --python=python3.6 -m bench pip install -U pip
 RUN mkdir -p /var/lib/cache/pip
 
 ADD servers /usr/src/servers
