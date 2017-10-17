@@ -17,7 +17,10 @@ RUN mkdir -p /usr/go/
 ENV GOPATH /usr/go/
 
 RUN apt-get update && apt-get install -y \
-        autoconf automake libtool build-essential git nodejs golang
+        autoconf automake libtool build-essential git golang
+
+RUN curl -sL https://deb.nodesource.com/setup_8.x | bash - && apt-get install -y nodejs
+
 RUN echo "deb http://ftp.debian.org/debian jessie-backports main" >> /etc/apt/sources.list
 RUN apt-get update && apt-get install -y -t jessie-backports gosu
 

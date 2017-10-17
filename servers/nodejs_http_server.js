@@ -12,17 +12,20 @@ function handle(request, response) {
     } else {
         msize = parseInt(msize, 10);
     }
-    if (!responses[msize]) {
-	// for Node.js v4
-	responses[msize] = new Buffer(msize).fill("X");
-	// for Node.js v6
-	// responses[msize] = Buffer.alloc(msize, "X");
+    if (responses[msize] !== undefined) {
+	responses[msize] = Buffer.alloc(msize, "X");
     }
     response.end(responses[msize]);
 }
 
 
 var server = http.createServer(handle);
+
+
+server.on("connect", function() {
+  socket.setNoDelay(true);
+});
+
 
 server.listen(PORT, function() {
     console.log('Serving on ::' + PORT.toString());
