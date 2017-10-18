@@ -49,6 +49,12 @@ benchmarks = [{
     'server_address': tcp_address,
     'client': tcp_client,
 }, {
+    'name': 'http-ruby-puma',
+    'title': 'HTTP Server (ruby/Puma)',
+    'server': ['ruby', '/usr/src/servers/ruby_puma.rb'],
+    'server_address': tcp_address,
+    'client': http_client,
+}, {
     'name': 'tcpecho-tornado-protocol',
     'title': 'TCP echo server (tornado)',
     'server': python + ['/usr/src/servers/torecho.py'],

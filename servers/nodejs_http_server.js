@@ -1,3 +1,5 @@
+process.env.UV_THREADPOOL_SIZE = 1;
+
 var http = require('http');
 
 
