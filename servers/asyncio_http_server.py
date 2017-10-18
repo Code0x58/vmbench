@@ -12,6 +12,14 @@ PRINT = 0
 
 _RESP_CACHE = {}
 
+def force_no_delay(transport):
+    sock = transport.get_extra_info('socket')
+    try:
+        sock.setsockopt(IPPROTO_TCP, TCP_NODELAY, 1)
+    except (OSError, NameError):
+        pass
+
+
 class HttpRequest:
     __slots__ = ('_protocol', '_url', '_headers', '_version')
 
@@ -76,6 +84,7 @@ class HttpProtocol(asyncio.Protocol):
 
     def connection_made(self, transport):
         self._transport = transport
+        force_no_delay(transport)
 
     def connection_lost(self, exc):
         self._current_request = self._current_parser = None
@@ -112,7 +121,16 @@ def abort(msg):
 
 
 def aiohttp_server(loop, addr):
+    # hack to attach to Protocol.connection_made
+    import aiohttp.web_server
+    class MyRequestHandler(aiohttp.web_server.RequestHandler):
+        def connection_made(self, transport):
+            super().connection_made(transport)
+            force_no_delay(transport)
+    aiohttp.web_server.RequestHandler = MyRequestHandler
+
     async def handle(request):
+        force_no_delay(request.transport)
         payload_size = int(request.match_info.get('size', 1024))
         resp = _RESP_CACHE.get(payload_size)
         if resp is None:
@@ -134,7 +152,12 @@ def httptools_server(loop, addr):
 
 
 def sanic_server(loop, addr):
-    kwargs = {'debug': False, 'log_config': None}
+    class MyHttpProtocol(sanic.server.HttpProtocol):
+        def connection_made(self, transport):
+            super().connection_made(transport)
+            force_no_delay(transport)
+
+    kwargs = {'debug': False, 'log_config': None, 'protocol': MyHttpProtocol}
     if type(addr) is type(''):
         # unix socket
         sock = socket.socket(socket.AF_UNIX, socket.SOCK_STREAM)
@@ -150,7 +173,7 @@ def sanic_server(loop, addr):
         return sanic.response.raw(_RESP_CACHE.get(size))
     app.add_route(test, '/')
     app.add_route(test, '/<size:int>')
-
+    
     return app.create_server(**kwargs)
 
 
