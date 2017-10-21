@@ -319,7 +319,7 @@ def kill_server():
     i = 0
     while server_container_exists():
         if i == 100:
-            subprocess.check_output(['docker', 'rm', '-f', 'magicbench'])
+            subprocess.run(['docker', 'rm', '-f', 'magicbench'])
         elif i == 110:
             raise IOError("container still exists a minute after being sigkilled")
         time.sleep(0.1)
