@@ -28,4 +28,4 @@ To run the http benchmarks and save results to ``./results.html``:
 
 .. code::
 
-  ./run_benchmarks http --duration=60 --save-html=results.html
+  ./run_benchmarks --duration=60 --save-html=results.html http

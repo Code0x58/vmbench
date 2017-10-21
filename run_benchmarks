@@ -442,12 +442,11 @@ def main():
     parser = argparse.ArgumentParser()
     parser.add_argument('--duration', '-D', default=30, type=int,
                         help='duration of each benchmark in seconds')
-    parser.add_argument('--benchmarks', type=str,
-                        help='comma-separated list of benchmarks to run ' +
-                             '(regular expressions are supported)')
     parser.add_argument('type', type=str,
                         choices={b['name'].split('-', 1)[0] for b in benchmarks},
                         help='type of benchmark to run')
+    parser.add_argument('benchmark_patterns', type=str, nargs='*',
+                        help='run benchmarks that match any of these regexes')
     parser.add_argument('--concurrency-levels', type=int, default=[10],
                         nargs='+',
                         help='a list of concurrency levels to use')
@@ -464,14 +463,15 @@ def main():
     if not os.path.exists(_socket):
         os.mkdir(_socket)
 
-    benchmarks_to_run = [b for b in benchmarks
-                         if b['name'].startswith(args.type)]
-    if args.benchmarks:
-        patterns = [re.compile(p) for p in args.benchmarks.split(',')]
-        benchmarks_to_run = [
-                b
-                for b in benchmarks_to_run
-                if any(p.match(b['name']) for p in patterns)]
+    if args.benchmark_patterns:
+        patterns = [re.compile(p) for p in args.benchmark_patterns]
+    else:
+        patterns = [re.compile('')]
+    benchmarks_to_run = []
+    for benchmark in benchmarks:
+        type_, name = benchmark['name'].split('-', 1)
+        if type_ == args.type and any(p.match(name) for p in patterns):
+            benchmarks_to_run.append(benchmark)
 
     benchmarks_data = []
 
