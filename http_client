@@ -45,7 +45,7 @@ function done(summary, latency, requests)
     out = string.format(tpl, summary.requests,  transfer, rps,
                         latency.min / 1000, latency.mean / 1000,
                         latency.max / 1000, latency.stdev / 1000,
-                        (latency.stdev / latency.mean) * 100,
+                        ((latency.mean ~= 0) and ((latency.stdev / latency.mean) * 100) or 0.0),
                         table.concat(latency_percentiles, ','))
 
     io.stderr:write(out)
