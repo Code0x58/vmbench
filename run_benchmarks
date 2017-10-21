@@ -324,6 +324,7 @@ def kill_server():
             raise IOError("container still exists a minute after being sigkilled")
         time.sleep(0.1)
         i += 1
+    subprocess.run(['docker', 'network', 'disconnect', 'bridge', '--force', 'magicbench'])
 
 
 def format_report(data, target_file):
