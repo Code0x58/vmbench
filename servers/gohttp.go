@@ -5,34 +5,27 @@ import (
     "fmt"
     "net/http"
     "strconv"
-
-    "github.com/golang/groupcache/lru"
 )
 
-var cache *lru.Cache
+var cache map[int][]byte
 
 func handler(w http.ResponseWriter, r *http.Request) {
-    var resp []byte
-
-    respSize := r.URL.Path[1:]
-    s, err := strconv.Atoi(respSize)
+    size, err := strconv.Atoi(r.URL.Path[1:])
     if err != nil {
-        s = 1024
+        size = 1024
     }
 
-    val, ok := cache.Get(s)
-    if ok {
-        resp = val.([]byte)
-    } else {
-        resp = bytes.Repeat([]byte{'X'}, s)
-        cache.Add(s, resp)
+    body, ok := cache[size]
+    if ! ok {
+        body = bytes.Repeat([]byte{'X'}, size)
+        cache[size] = body
     }
 
-    w.Write(resp)
+    w.Write(body)
 }
 
 func main() {
-    cache = lru.New(10)
+    cache = make(map[int][]byte)
     http.HandleFunc("/", handler)
     fmt.Println("Serving on :25000")
     http.ListenAndServe(":25000", nil)

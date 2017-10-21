@@ -39,8 +39,7 @@ RUN vex --python=python3.6 -m bench pip install -U pip
 RUN mkdir -p /var/lib/cache/pip
 
 ADD servers /usr/src/servers
-RUN cd /usr/src/servers && go build goecho.go && \
-        go get github.com/golang/groupcache/lru && go build gohttp.go
+RUN cd /usr/src/servers && go build goecho.go && go build gohttp.go
 RUN vex bench pip --cache-dir=/var/lib/cache/pip \
         install -r /usr/src/servers/requirements.txt
 
