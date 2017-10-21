@@ -32,7 +32,7 @@ RUN curl https://storage.googleapis.com/golang/go1.8.3.linux-amd64.tar.gz \
 RUN git clone --depth=1 https://github.com/rbenv/ruby-build.git
 RUN ./ruby-build/install.sh
 RUN ruby-build 2.3.5 /usr/local/
-RUN gem install rack puma
+RUN gem install rack:1.3 puma:3.10.0
 
 RUN pip3 install vex
 RUN vex --python=python3.6 -m bench pip install -U pip
