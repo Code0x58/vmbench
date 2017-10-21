@@ -315,15 +315,11 @@ def server_container_exists():
 def kill_server():
     if server_is_running():
         print('Shutting down server...')
-        subprocess.check_output(['docker', 'stop', '-t10', 'magicbench'])
-    i = 0
-    while server_container_exists():
-        if i == 100:
+        subprocess.check_output(['docker', 'stop', '-t5', 'magicbench'])
+        if server_container_exists():
             subprocess.run(['docker', 'rm', '-f', 'magicbench'])
-        elif i == 110:
-            raise IOError("container still exists a minute after being sigkilled")
-        time.sleep(0.1)
-        i += 1
+        if server_container_exists():
+            raise IOError("container still exists after being forceably removed")
     subprocess.run(['docker', 'network', 'disconnect', 'bridge', '--force', 'magicbench'])
 
 
